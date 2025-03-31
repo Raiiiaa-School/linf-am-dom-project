@@ -42,6 +42,8 @@ function init() {
     getFaces(); // calcular as faces e guardar no array faces
     createCountries(); // criar países
     game.sounds.background.play();
+    render(); // adicionar as cartas à stage
+    flipCardFaces(); // adicionar a animação de virar a carta
 
     //completar
 }
@@ -61,13 +63,37 @@ function createCountries() {
 		virar a carta:
 			umaCarta.classList.remove("escondida");
     */
+   for(let i = 0; i < ROWS; i++){   
+    for(let j = 0; j < COLS; j++){
+        let umaCarta = document.createElement("div");
+        umaCarta.classList.add("carta");
+        umaCarta.style.backgroundPositionX = faces[i * COLS + j].x;
+        umaCarta.style.backgroundPositionY = faces[i * COLS + j].y;
+        // umaCarta.innerHTML = `
+        // <div class="face frente"></div>
+        // <div class="face verso"></div>`;
+        
+        game.board[i][j] = umaCarta;
+        game.stage.appendChild(umaCarta);
+    }
+    }
 }
 
 // Adicionar as cartas do tabuleiro à stage
-function render() {}
-
+function render() {
+// Adicionar as cartas ao tabuleiro
+game.board.forEach(row => {
+    row.forEach(card => {
+        game.stage.appendChild(card);
+    });
+});
+}
 // baralha as cartas no tabuleiro
-function scramble() {}
+function scramble() {
+    // completar
+    const flipCards = document.querySelectorAll('.carta');
+
+}
 
 function exemplo() {
     let o1 = { id: 1, pos: { x: 10, y: 20 } };
@@ -132,6 +158,16 @@ function getFaces() {
         offsetY += 2;
     }
 }
+
+// ao clicar numa carta, esta tem de virar com uma animação e que não apareça com a face virada para cima instantâneamente
+function flipCardFaces(){
+    /* Não Modificar esta função */
+    const flipCard = document.querySelector('.carta');
+    flipCard.addEventListener('click', function(){
+        flipCard.classList.toggle('virada');
+    });
+}
+flipCardFaces();
 
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
