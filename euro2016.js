@@ -8,10 +8,10 @@ const game = {}; // encapsula a informação de jogo. Está vazio mas vai-se pre
 
 // sons do jogo
 const sounds = {
-    background: null,
-    flip: null,
-    success: null,
-    hide: null,
+  background: null,
+  flip: null,
+  success: null,
+  hide: null,
 };
 
 // numero de linhas e colunas do tabuleiro;
@@ -20,15 +20,15 @@ const COLS = 4;
 
 game.sounds = sounds; // Adicionar os sons sons do jogo ao objeto game.
 game.board = Array(COLS)
-    .fill()
-    .map(() => Array(ROWS)); // criação do tabuleiro como um array de 6 linhas x 8 colunas
+  .fill()
+  .map(() => Array(ROWS)); // criação do tabuleiro como um array de 6 linhas x 8 colunas
 
 // Representa a imagem de uma carta de um país. Esta definição é apenas um modelo para outros objectos que sejam criados
 // com esta base através de let umaFace = Object.create(face).
 const face = {
-    country: -1,
-    x: -1,
-    y: -1,
+  country: -1,
+  x: -1,
+  y: -1,
 };
 
 const CARDSIZE = 102; // tamanho da carta (altura e largura)
@@ -48,7 +48,7 @@ function init() {
 
 // Cria os paises e coloca-os no tabuleiro de jogo(array board[][])
 function createCountries() {
-    /* DICA:
+  /* DICA:
 	Seja umaCarta um elemento DIV, a imagem de carta pode ser obtida nos objetos armazenados no array faces[]; o verso da capa 
 	está armazenado na ultima posicao do array faces[]. Pode também ser obtido através do seletor de classe .escondida do CSS.
 		umaCarta.classList.add("carta"); 	
@@ -61,6 +61,36 @@ function createCountries() {
 		virar a carta:
 			umaCarta.classList.remove("escondida");
     */
+  fetch("./assets/oitavos.json")
+    .then((response) => response.json())
+    .then((data) => {
+      const frames = data.frames;
+      let cardIndex = 0; // Índice da carta para calcular a posição
+      const numCards = Object.keys(frames).length; // Número total de cartas únicas
+      const totalCards = ROWS * COLS; // Número total de cartas no tabuleiro
+
+      for (let i = 0; i < totalCards; i++) {
+        const frameName = Object.keys(frames)[i % numCards]; // Obter o nome do frame com base no índice
+        const frameData = frames[frameName].frame;
+        let umaCarta = document.createElement("div");
+
+        umaCarta.classList.add("carta");
+        umaCarta.style.backgroundImage = "url(./assets/oitavos.png)";
+        umaCarta.style.backgroundPositionX = -frameData.x + "px";
+        umaCarta.style.backgroundPositionY = -frameData.y + "px";
+        umaCarta.style.width = CARDSIZE + "px";
+        umaCarta.style.height = CARDSIZE + "px";
+
+        // Calcular coordenadas top e left
+        const row = Math.floor(cardIndex / COLS);
+        const col = cardIndex % COLS;
+        umaCarta.style.top = row * CARDSIZE + "px";
+        umaCarta.style.left = col * CARDSIZE + "px";
+
+        game.stage.appendChild(umaCarta);
+        cardIndex++;
+      }
+    });
 }
 
 // Adicionar as cartas do tabuleiro à stage
