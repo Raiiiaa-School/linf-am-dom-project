@@ -60,6 +60,11 @@ body {
     transform: rotateY(180deg);
 }
 
+.frente {
+    background-color: white;
+    background-size: cover;
+}
+/* Classe que vira a carta quando é clicada */
 .carta.virada {
     transform: rotateY(180deg);
 }
