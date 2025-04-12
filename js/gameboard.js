@@ -5,6 +5,9 @@ import { Sounds } from "./sound.js";
  * Represents a game board with sounds and board properties.
  */
 export class Gameboard {
+    /**
+     * @type {number}
+     */
     BOARD_SIZE = 4;
     /**
      * @type {Sounds}
@@ -13,11 +16,15 @@ export class Gameboard {
     /**
      * @type {Array<Card>}
      */
-    board = [];
+    cards = [];
     /**
      * @type {Array<Card>}
      */
-    facedCards = [];
+    matchedCards = [];
+    /**
+     * @type {Array<Card>}
+     */
+    selectedCards = [];
     /**
      * @type {HTMLDivElement}
      */
@@ -26,6 +33,7 @@ export class Gameboard {
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
+        Card.gameboard = this;
     }
 
     createCards(jsonData) {
@@ -36,16 +44,66 @@ export class Gameboard {
                 this.#element,
                 jsonData,
             );
-            this.board.push(card);
+            this.cards.push(card);
         }
 
         this.shuffleCards();
     }
 
+    canAddSelectedCard() {
+        if (this.selectedCards.length >= 2) {
+            console.log("You can't select more than 2 cards");
+            return false;
+        }
+        return true;
+    }
+    /**
+     * @param {Card} card
+     */
+    addSelectedCard(card) {
+        if (!this.canAddSelectedCard()) {
+            return;
+        }
+        this.selectedCards.push(card);
+
+        if (this.selectedCards.length !== 2) {
+            return;
+        }
+
+        this.handleSelectedPair();
+    }
+
+    handleSelectedPair() {
+        const card1 = this.selectedCards.at(0);
+        const card2 = this.selectedCards.at(-1);
+
+        if (!card1.compare(card2)) {
+            this.resetGameLoop(1000, false);
+            return;
+        }
+
+        console.log("They are equal. They stay here");
+        this.matchedCards.push(card1);
+        this.matchedCards.push(card2);
+
+        this.resetGameLoop(1000, true);
+    }
+
+    resetGameLoop(time = 1000, match = false) {
+        setTimeout(() => {
+            if (!match) {
+                this.selectedCards.forEach((card) => {
+                    card.showBack();
+                });
+            }
+            this.selectedCards = [];
+        }, time);
+    }
+
     shuffleCards() {
         const positions = [];
 
-        this.board.forEach((card) => {
+        this.cards.forEach((card) => {
             if (card.isFace) {
                 return;
             }
@@ -57,7 +115,7 @@ export class Gameboard {
                 y = Math.floor(Math.random() * this.BOARD_SIZE);
             } while (
                 positions.some((pos) => pos.x === x && pos.y === y) ||
-                this.facedCards.some((card) => card.x === x && card.y === y)
+                this.matchedCards.some((card) => card.x === x && card.y === y)
             );
 
             card.x = x;

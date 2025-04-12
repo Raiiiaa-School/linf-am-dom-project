@@ -11,6 +11,23 @@ export class Face {
      * @type {number}
      */
     y;
+
+    /**
+    * @type {number}
+    */
+    facePosX
+    /**
+    * @type {number}
+    */
+    facePosY
+    /**
+    * @type {number}
+    */
+    backPosX
+    /**
+    * @type {number}
+    */
+    backPosY
     /**
      * @type {number}
      */
@@ -28,11 +45,27 @@ export class Face {
      * @param {keyof typeof CountryFaces} face
      */
     constructor(face, jsonData) {
-        this.x = jsonData.frames[face].frame.x;
-        this.y = jsonData.frames[face].frame.y;
+        this.facePosX = jsonData.frames[face].frame.x;
+        this.facePosY = jsonData.frames[face].frame.y;
+
+        this.backPosX = jsonData.frames["download.png"].frame.x
+        this.backPosY = jsonData.frames["download.png"].frame.y
+
         this.width = jsonData.frames[face].frame.w;
         this.height = jsonData.frames[face].frame.h;
 
+        this.showBack()
+
         this.country = face.split(".")[0];
+    }
+
+    showFace() {
+        this.x = this.facePosX
+        this.y = this.facePosY
+    }
+
+    showBack() {
+        this.x = this.backPosX
+        this.y = this.backPosX
     }
 }
