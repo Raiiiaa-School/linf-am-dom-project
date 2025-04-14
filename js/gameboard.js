@@ -36,6 +36,11 @@ export class Gameboard {
         Card.gameboard = this;
     }
 
+    start() {
+        this.sounds.background.play();
+        this.shuffleCards();
+    }
+
     createCards(jsonData) {
         for (let i = 0; i < this.BOARD_SIZE * this.BOARD_SIZE; i++) {
             const faces = Object.values(CountryFaces);
@@ -46,8 +51,6 @@ export class Gameboard {
             );
             this.cards.push(card);
         }
-
-        this.shuffleCards();
     }
 
     canAddSelectedCard() {
@@ -65,6 +68,7 @@ export class Gameboard {
             return;
         }
         this.selectedCards.push(card);
+        this.sounds.flip.play();
 
         if (this.selectedCards.length !== 2) {
             return;
@@ -74,19 +78,32 @@ export class Gameboard {
     }
 
     handleSelectedPair() {
-        const card1 = this.selectedCards.at(0);
-        const card2 = this.selectedCards.at(-1);
-
-        if (!card1.compare(card2)) {
-            this.resetGameLoop(1000, false);
+        if (!this.selectedCards.at(0).compare(this.selectedCards.at(-1))) {
+            this.handleUnmatchedPair();
             return;
         }
 
-        console.log("They are equal. They stay here");
-        this.matchedCards.push(card1);
-        this.matchedCards.push(card2);
+        this.handleMatchedPair();
+    }
 
+    handleUnmatchedPair() {
+        this.resetGameLoop(1000, false);
+    }
+
+    handleMatchedPair() {
+        this.matchedCards.push(this.selectedCards.at(0));
+        this.matchedCards.push(this.selectedCards.at(-1));
+
+        this.selectedCards.forEach((card) => {
+            card.handleMatch();
+        });
+
+        this.sounds.success.play();
         this.resetGameLoop(1000, true);
+
+        if (this.matchedCards.length >= this.cards.length) {
+            this.win();
+        }
     }
 
     resetGameLoop(time = 1000, match = false) {
@@ -95,9 +112,14 @@ export class Gameboard {
                 this.selectedCards.forEach((card) => {
                     card.showBack();
                 });
+                this.sounds.hide.play();
             }
             this.selectedCards = [];
         }, time);
+    }
+
+    win() {
+        this.sounds.win.play();
     }
 
     shuffleCards() {
@@ -139,18 +161,5 @@ export class Gameboard {
         } catch (error) {
             console.error("Error fetching or parsing JSON: ", error);
         }
-    }
-
-    setupAudio() {
-        this.sounds.background = document.querySelector("#backgroundSnd");
-        this.sounds.success = document.querySelector("#successSnd");
-        this.sounds.flip = document.querySelector("#flipSnd");
-        this.sounds.hide = document.querySelector("#hideSnd");
-        this.sounds.win = document.querySelector("#goalSnd");
-
-        // definições de volume;
-        game.sounds.background.volume = 0.05; // o volume varia entre 0 e 1
-
-        // nesta pode-se mexer se for necessário acrescentar ou configurar mais sons
     }
 }

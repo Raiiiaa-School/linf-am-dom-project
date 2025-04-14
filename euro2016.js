@@ -1,16 +1,12 @@
 import { Gameboard } from "./js/gameboard.js";
 
-/**
- * @type {Gameboard | undefined}
- */
-let gameboard;
-
 window.addEventListener("load", init, false);
 
 async function init() {
-    gameboard = new Gameboard();
+    const gameboard = new Gameboard();
     const jsonData = await gameboard.loadJSON("./assets/oitavos.json");
     gameboard.createCards(jsonData);
+    gameboard.start();
 }
 
 /**

@@ -4,21 +4,37 @@
  */
 export class Sounds {
     /**
-     * @type {HTMLAudioElement}
+     * @type {Sound}
      */
     background;
     /**
-     * @type {HTMLAudioElement}
+     * @type {Sound}
      */
     flip;
     /**
-     * @type {HTMLAudioElement}
+     * @type {Sound}
      */
     success;
     /**
-     * @type {HTMLAudioElement}
+     * @type {Sound}
      */
     hide;
+    /**
+     * @type {Sound}
+     */
+    win;
+
+    constructor() {
+        this.background = new Sound(
+            document.querySelector("#backgroundSnd"),
+            0.02,
+            true,
+        );
+        this.success = new Sound(document.querySelector("#successSnd"), 0.5);
+        this.flip = new Sound(document.querySelector("#flipSnd"), 0.5);
+        this.hide = new Sound(document.querySelector("#hideSnd"), 0.5);
+        this.win = new Sound(document.querySelector("#goalSnd"), 0.5);
+    }
 }
 
 export class Sound {
@@ -30,8 +46,10 @@ export class Sound {
     /**
      * @param {HTMLAudioElement} element
      */
-    constructor(element) {
+    constructor(element, volume, loop = false) {
         this.#element = element;
+        this.setVolume(volume);
+        this.#element.loop = loop;
     }
 
     /**
