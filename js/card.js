@@ -12,6 +12,10 @@ export const CountryFaces = Object.freeze({
     PORTUGAL: "Portugal.png",
 });
 
+/**
+ * Class representing a card.
+ * @class
+ */
 export class Card {
     /**
      * @type {Gameboard}
@@ -59,6 +63,10 @@ export class Card {
         this.createElement(parent);
     }
 
+    /**
+     * Creates the element of the card.
+     * @param {HTMLElement} parent - Define the parent that to append the card.
+     */
     createElement(parent) {
         this.#element = document.createElement("div");
         this.#element.style.position = "absolute";
@@ -69,6 +77,8 @@ export class Card {
         this.#element.style.width = this.face.width + "px";
         this.#element.style.height = this.face.height + "px";
 
+        this.#element.classList.add("card");
+
         this.renderFace();
 
         this.#element.addEventListener("click", this.handleClickFn, {
@@ -77,6 +87,9 @@ export class Card {
         parent.appendChild(this.#element);
     }
 
+    /**
+     * Handles the click event on the card.
+     */
     handleClick() {
         if (this.isFace) {
             console.log("Card is already turned");
@@ -96,12 +109,18 @@ export class Card {
         Card.gameboard.addSelectedCard(this);
     }
 
+    /**
+     * Shows the face of the card.
+     */
     showFace() {
         this.isFace = true;
         this.face.showFace();
         this.renderFace();
     }
 
+    /**
+     * Shows the back of the card.
+     */
     showBack() {
         this.isFace = false;
         this.face.showBack();
@@ -109,25 +128,40 @@ export class Card {
     }
 
     /**
+     * Compares the card with another card. If the cards match, returns true
      * @param {Card} card
+     * @returns {boolean} - true if the cards match, false otherwise
      */
     compare(card) {
-        return this.getContry() === card.getContry();
+        return this.getCountry() === card.getCountry();
     }
 
-    getContry() {
+    /**
+     * Gets the country of the card.
+     * @returns {string} - the country of the card
+     */
+    getCountry() {
         return this.face.country;
     }
 
+    /**
+     * Handles the match event on the card.
+     */
     handleMatch() {
         this.controller.abort();
     }
 
+    /**
+     * Renders the face of the card.
+     */
     renderFace() {
         this.#element.style.backgroundPositionX = `-${this.face.x}px`;
         this.#element.style.backgroundPositionY = `-${this.face.y}px`;
     }
 
+    /**
+     * Renders the card.
+     */
     render() {
         this.#element.style.left = `${this.x * this.face.width}px`;
         this.#element.style.top = `${this.y * this.face.height}px`;

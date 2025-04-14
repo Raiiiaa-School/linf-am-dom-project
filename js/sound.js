@@ -37,6 +37,10 @@ export class Sounds {
     }
 }
 
+/**
+ * Class representing a sound effect.
+ * @class
+ */
 export class Sound {
     /**
      * @type {HTMLAudioElement}

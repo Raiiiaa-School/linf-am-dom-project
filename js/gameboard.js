@@ -36,11 +36,18 @@ export class Gameboard {
         Card.gameboard = this;
     }
 
+    /**
+     * Starts the game.
+     */
     start() {
         this.sounds.background.play();
         this.shuffleCards();
     }
 
+    /**
+     * Creates the cards.
+     * @param {Object} jsonData - The JSON data of the cards.
+     */
     createCards(jsonData) {
         for (let i = 0; i < this.BOARD_SIZE * this.BOARD_SIZE; i++) {
             const faces = Object.values(CountryFaces);
@@ -53,6 +60,10 @@ export class Gameboard {
         }
     }
 
+    /**
+     * Checks if the selected cards can be added.
+     * @returns {boolean} - True if the selected cards can be added, false otherwise.
+     */
     canAddSelectedCard() {
         if (this.selectedCards.length >= 2) {
             console.log("You can't select more than 2 cards");
@@ -60,8 +71,10 @@ export class Gameboard {
         }
         return true;
     }
+
     /**
-     * @param {Card} card
+     * Adds a selected card to the game board.
+     * @param {Card} card - The card to be added.
      */
     addSelectedCard(card) {
         if (!this.canAddSelectedCard()) {
@@ -77,6 +90,9 @@ export class Gameboard {
         this.handleSelectedPair();
     }
 
+    /**
+     * Handles the selected pair of cards.
+     */
     handleSelectedPair() {
         if (!this.selectedCards.at(0).compare(this.selectedCards.at(-1))) {
             this.handleUnmatchedPair();
@@ -86,10 +102,16 @@ export class Gameboard {
         this.handleMatchedPair();
     }
 
+    /**
+     * Handles the unmatched pair of cards.
+     */
     handleUnmatchedPair() {
         this.resetGameLoop(1000, false);
     }
 
+    /**
+     * Handles the matched pair of cards.
+     */
     handleMatchedPair() {
         this.matchedCards.push(this.selectedCards.at(0));
         this.matchedCards.push(this.selectedCards.at(-1));
@@ -106,6 +128,9 @@ export class Gameboard {
         }
     }
 
+    /**
+     * Resets the game loop.
+     */
     resetGameLoop(time = 1000, match = false) {
         setTimeout(() => {
             if (!match) {
@@ -118,10 +143,16 @@ export class Gameboard {
         }, time);
     }
 
+    /**
+     * Handles the win condition.
+     */
     win() {
         this.sounds.win.play();
     }
 
+    /**
+     * Shuffles the cards.
+     */
     shuffleCards() {
         const positions = [];
 
@@ -148,6 +179,11 @@ export class Gameboard {
         });
     }
 
+    /**
+     * Loads JSON data from a given path.
+     * @param {string} path - The path to the JSON file.
+     * @returns {Promise<Object>} - A promise that resolves with the JSON data.
+     */
     async loadJSON(path) {
         try {
             const res = await fetch(path);
