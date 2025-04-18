@@ -1,8 +1,9 @@
+import { Gameboard } from "./js/gameboard.js";
+
 /**
- * Aplicações multimédia - Trabalho Prático 1
- * (c) Catarina Cruz, 2025
- *
+ * @type {Gameboard | undefined}
  */
+<<<<<<< HEAD
 
 const game = {}; // encapsula a informação de jogo. Está vazio mas vai-se preenchendo com definições adicionais.
 
@@ -33,19 +34,19 @@ const face = {
 
 const CARDSIZE = 102; // tamanho da carta (altura e largura)
 let faces = []; // Array que armazena objectos face que contêm posicionamentos da imagem e códigos dos paises
+=======
+let gameboard;
+>>>>>>> development
 
 window.addEventListener("load", init, false);
 
-function init() {
-    game.stage = document.querySelector("#stage");
-    setupAudio(); // configurar o audio
-    getFaces(); // calcular as faces e guardar no array faces
-    createCountries(); // criar países
-    game.sounds.background.play();
-
-    //completar
+async function init() {
+    gameboard = new Gameboard();
+    const jsonData = await gameboard.loadJSON("./assets/oitavos.json");
+    gameboard.createCards(jsonData);
 }
 
+<<<<<<< HEAD
 // Cria os paises e coloca-os no tabuleiro de jogo(array board[][])
 function createCountries() {
   /* DICA:
@@ -166,3 +167,9 @@ function getFaces() {
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
 -------------------------------------------------------------------------------------------------- */
+=======
+/**
+ * Aplicações multimédia - Trabalho Prático 1
+ * (c) Catarina Cruz, 2025
+ */
+>>>>>>> development
