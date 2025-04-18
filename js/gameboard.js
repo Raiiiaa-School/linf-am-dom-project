@@ -1,5 +1,6 @@
 import { CountryFaces, Card } from "./card.js";
 import { Sounds } from "./sound.js";
+import { Timer } from "./timer.js";
 
 /**
  * Represents a game board with sounds and board properties.
@@ -19,13 +20,33 @@ export class Gameboard {
      */
     facedCards = [];
     /**
-     * @type {HTMLDivElement}
+     * @type {Timer}
      */
+    timer;
     #element;
 
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
+
+        this.timer = new Timer (() => {
+            this.shuffleCards();
+        });
+    
+        this.timer.start();
+
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                this.resetTimer();
+            }
+        });
+    }
+
+    resetTimer() {
+        if (this.timer) {
+            this.timer.reset();
+            this.timer.start();
+        }
     }
 
     createCards(jsonData) {
@@ -39,6 +60,7 @@ export class Gameboard {
             this.board.push(card);
         }
 
+        
         this.shuffleCards();
     }
 

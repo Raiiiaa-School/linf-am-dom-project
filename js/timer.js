@@ -1,10 +1,10 @@
 export class Timer {
-    constructor(gameboard) {
+    constructor(callback) {
+        this.callback = callback;
         this._intervalId = null;
         this._currentTime = 0;
         this._maxTime = 45;
         this._progressEl = document.getElementById("time");
-        this._gameboard = gameboard;
         this._updateProgressBar();
     }
 
@@ -16,12 +16,8 @@ export class Timer {
 
             if (this._currentTime === this._maxTime) {
                 clearInterval(this._intervalId);
-                this._showOverlay();
-
-                // Baralhar cartas após o tempo esgotar
-                if (this._gameboard) {
-                    this._gameboard.shuffleCards();
-                }
+                this._showOverlay();  
+                this.callback();
             }
         }, 1000);
     }
@@ -30,6 +26,7 @@ export class Timer {
         clearInterval(this._intervalId);
         this._currentTime = 0;
         this._updateProgressBar();
+        this._hideOverlay();  
     }
 
     _updateProgressBar() {
@@ -48,11 +45,16 @@ export class Timer {
         const overlay = document.getElementById("overlay");
         if (overlay) {
             overlay.classList.remove("hidden");
-    
-            // Esconde o overlay após 3 segundos
             setTimeout(() => {
                 overlay.classList.add("hidden");
             }, 3000);
+        }
+    }
+
+    _hideOverlay() {
+        const overlay = document.getElementById("overlay");
+        if (overlay) {
+            overlay.classList.add("hidden");
         }
     }
 }
