@@ -2,8 +2,19 @@ body {
     margin: 0;
     padding: 0;
     background-color: #FFFFFF;
-    z-index: 20;
-    background: url(../images/background.png);
+    background: url(../images/background.png) repeat; /* Fundo com repetição */
+    background-size: cover; /* Ajusta o tamanho do fundo */
+    display: flex;
+}
+#stage {
+    display: grid;
+    grid-template-columns: repeat(4, 102px); /* 4 colunas com largura fixa de 102px */
+    grid-template-rows: repeat(4, 102px); /* 4 linhas com altura fixa de 102px */
+    gap: 10px; /* Espaço entre as cartas */
+    width: calc(4 * 102px + 3 * 10px); /* Largura total do tabuleiro (4 cartas + 3 gaps) */
+    height: calc(4 * 102px + 3 * 10px); /* Altura total do tabuleiro (4 cartas + 3 gaps) */
+    margin: 0 auto; /* Centralizar o tabuleiro horizontalmente */
+    position: relative;
 }
 /*Tabuleiro de jogo (board)*/
 #tabuleiro {
@@ -17,27 +28,49 @@ body {
 #container {
     position: relative;
     padding: 0;
-    top: 20px;
     margin: auto;
-    width: 410px;
-    height: 410px;
+    width: calc(4 * 102px + 3 * 10px + 20px); /* Largura do tabuleiro + bordas */
+    height: calc(4 * 102px + 3 * 10px + 20px); /* Altura do tabuleiro + bordas */
     display: block;
-    border: 10px #1F4952 solid;
-    border-radius: 2%;
-    box-shadow: 4px 4px 4px #1E7179;
-    background-color: #2D5A63;
+    border: 10px solid #1F4952; /* Borda do contêiner */
+    background-color: #2D5A63; /* Cor de fundo do contêiner */
 }
-
-/*Define uma cara*/
-.carta{
-    display:block;
-    height: 102px;
-    width: 102px;
-    background-image: url(../assets/oitavos.png);
-    position:absolute;
+/*Define uma carta*/
+.carta {
+    width: 102px; /* Largura fixa da carta */
+    height: 102px; /* Altura fixa da carta */
+    position: relative;
     cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+    background-color: white; /* Cor de fundo padrão */
+    border-radius: 5px; /* Bordas arredondadas */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra das cartas */
 }
 
+.face {
+    position: absolute;
+    width: 102px;
+    height: 102px;
+    backface-visibility: hidden;
+    background-size: cover; /* Ajusta o tamanho da imagem de fundo para cobrir toda a carta */
+    background-position: center; /* Centraliza a imagem de fundo */
+    border-radius: 5px; /* Bordas arredondadas */
+}
+
+.verso{
+    background-color: #3498db; /* Cor de fundo do verso da carta*/
+    transform: rotateY(180deg);
+}
+
+.frente {
+    background-color: white;
+    background-size: cover;
+}
+/* Classe que vira a carta quando é clicada */
+.carta.virada {
+    transform: rotateY(180deg);
+}
 /*classe que mostra a carta virada ao contrario*/
 .escondida{
     background-position: -209px -209px !important;
@@ -47,6 +80,8 @@ body {
 .matched{
     animation: matchKF alternate 0.1s;
 }
+
+
 
 @keyframes matchKF{
     from{ transform: scale(0);}
