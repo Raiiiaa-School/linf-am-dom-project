@@ -1,4 +1,4 @@
-export class Alert {
+export class Dialog {
     /**
      * @type {HTMLDialogElement}
      */
