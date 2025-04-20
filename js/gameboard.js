@@ -119,8 +119,6 @@ export class Gameboard {
         this.selectedCards.forEach((card) => {
             card.handleMatch();
         });
-
-        this.sounds.success.play();
         this.resetGameLoop(1000, true);
 
         if (this.matchedCards.length >= this.cards.length) {

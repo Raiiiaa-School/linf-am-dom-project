@@ -168,11 +168,12 @@ export class Card {
      * Handles the match event on the card.
      */
     handleMatch() {
+        this.controller.abort();
         const timer = new Timer(200);
         timer.start();
         timer.setOnComplete(() => {
+            Card.gameboard.sounds.success.play();
             this.#element.classList.add("matched");
-            this.controller.abort();
         });
     }
 
