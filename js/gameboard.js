@@ -17,11 +17,11 @@ export class Gameboard {
     /**
      * @type {Timer}
      */
-    shuffleTimer = new Timer(45000); // 45s
+    shuffleTimer = new Timer(4500, true); // 45s
     /**
      * @type {Timer}
      */
-    secondsTimer = new Timer(1000, true); // 1s
+    secondsTimer = new Timer(100, true); // 1s
     /**
      * @type {Array<Card>}
      */
@@ -54,11 +54,12 @@ export class Gameboard {
         this.overlayElement = document.querySelector(".overlay");
         Card.gameboard = this;
 
-        this.shuffleTimer.setOnComplete(() => {
-            this.getShuffledCardPositions();
+        this.shuffleTimer.setOnComplete(async () => {
             this.progressElement.value = 0;
             this.progressElement.classList.remove("blink");
             this.overlayElement.classList.add("hidden");
+
+            await this.shuffleCards();
         });
 
         this.secondsTimer.setOnComplete(() => {
@@ -192,21 +193,43 @@ export class Gameboard {
      */
     getShuffledCardPositions() {
         const positions = [];
+        const availablePositions = [];
 
-        const newPositions = this.cards.map((card) => {
-            let x = 0;
-            let y = 0;
-            do {
-                x = Math.floor(Math.random() * this.BOARD_SIZE);
-                y = Math.floor(Math.random() * this.BOARD_SIZE);
-            } while (
-                positions.some((pos) => pos.x === x && pos.y === y) ||
-                this.matchedCards.some((card) => card.x === x && card.y === y)
+        // First, create a list of all possible positions
+        for (let x = 0; x < this.BOARD_SIZE; x++) {
+            for (let y = 0; y < this.BOARD_SIZE; y++) {
+                availablePositions.push({ x, y });
+            }
+        }
+
+        // Remove positions that are occupied by matched cards
+        this.matchedCards.forEach((card) => {
+            const index = availablePositions.findIndex(
+                (pos) => pos.x === card.x && pos.y === card.y,
             );
-            positions.push({ x, y });
-            return { x, y };
+            if (index !== -1) {
+                availablePositions.splice(index, 1);
+            }
+            positions.push({ x: card.x, y: card.y }); // Keep matched cards in their positions
         });
-        return newPositions;
+
+        // Shuffle remaining available positions
+        for (let i = availablePositions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availablePositions[i], availablePositions[j]] = [
+                availablePositions[j],
+                availablePositions[i],
+            ];
+        }
+
+        // Assign new positions to unmatched cards
+        this.cards.forEach((card, index) => {
+            if (availablePositions.length > 0) {
+                positions.push(availablePositions.pop());
+            }
+        });
+
+        return positions;
     }
 
     /**
@@ -229,6 +252,7 @@ export class Gameboard {
 
         // First animation: Move cards to center one by one
         for (const card of this.cards) {
+            card.removeEventListeners();
             await new Promise((resolve) => {
                 // Store the original position for later
                 card.originalX = card.x;
@@ -262,6 +286,8 @@ export class Gameboard {
                 });
                 setTimeout(resolve, animationDelay);
             });
+
+            card.addClickListener();
         }
     }
 

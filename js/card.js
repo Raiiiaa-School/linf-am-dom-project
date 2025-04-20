@@ -101,10 +101,17 @@ export class Card {
         this.showBack();
         this.renderFace();
 
+        parent.appendChild(this.#element);
+    }
+
+    addClickListener() {
         this.#element.addEventListener("click", this.handleClickFn, {
             signal: this.controller.signal,
         });
-        parent.appendChild(this.#element);
+    }
+
+    removeEventListeners() {
+        this.#element.removeEventListener("click", this.handleClickFn);
     }
 
     /**
@@ -127,6 +134,20 @@ export class Card {
 
         this.showFace();
         Card.gameboard.addSelectedCard(this);
+    }
+
+    /**
+     * Handles the match event on the card.
+     */
+    handleMatch() {
+        this.isMatched = true;
+        this.#element.removeEventListener("click", this.handleClickFn);
+        const timer = new Timer(200);
+        timer.start();
+        timer.setOnComplete(() => {
+            Card.gameboard.sounds.success.play();
+            this.#element.classList.add("matched");
+        });
     }
 
     /**
@@ -170,19 +191,6 @@ export class Card {
      */
     getCountry() {
         return this.face.country;
-    }
-
-    /**
-     * Handles the match event on the card.
-     */
-    handleMatch() {
-        this.controller.abort();
-        const timer = new Timer(200);
-        timer.start();
-        timer.setOnComplete(() => {
-            Card.gameboard.sounds.success.play();
-            this.#element.classList.add("matched");
-        });
     }
 
     /**

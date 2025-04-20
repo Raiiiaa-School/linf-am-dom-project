@@ -118,9 +118,9 @@ dialog .close svg {
 /* classe que anima a progress bar quando é adicionada à sua lista de classes*/
 .blink[value]::-webkit-progress-bar,
 .blink[value]::-moz-progress-bar {
-    -moz-animation: blink alternate 1000ms infinite ease-in-out;
-    -webkit-animation: blink alternate 1000ms infinite ease-in-out;
-    animation: blink alternate 1000ms infinite ease-in-out;
+    -moz-animation: blink alternate 500ms infinite ease-in-out;
+    -webkit-animation: blink alternate 500ms infinite ease-in-out;
+    animation: blink alternate 500ms infinite ease-in-out;
 }
 
 /* Overlay */
@@ -133,7 +133,7 @@ dialog .close svg {
         rgba(0, 0, 0, 0) 70%,
         rgba(255, 0, 0, 0.5) 100%
     );
-    animation: fadeOut 1000ms alternate infinite;
+    animation: fadeOut 500ms alternate infinite;
 }
 
 .card {
