@@ -26,6 +26,45 @@ export class Gameboard {
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
+        this.setupEventListeners();
+    }
+
+    async initialize() {
+        this.setupAudio(); 
+        const jsonData = await this.loadJSON("./assets/oitavos.json");
+        this.createCards(jsonData);
+    }
+
+    setupEventListeners() {
+        document.addEventListener('keydown', this.handleKeyDown);
+    }
+
+    handleKeyDown = (event) => {
+        if (event.key === ' ') {
+            this.restartGame();
+        }
+    }
+
+    restartGame = () => {
+        console.log("Restarting the game...");
+
+        // 1. Baralhar todas as cartas
+        this.shuffleCards();
+
+        // 2. Esconde todas as cartas após um breve período
+        setTimeout(() => {
+            this.board.forEach(card => {
+                card.isFace = false;
+                card.unflipVisual();
+                card.resetMatch();
+            });
+        }, 1500); // Tempo para mostrar brevemente as cartas antes de esconder (opcional)
+
+        // 3. Dá reset do timer e a barra de progresso
+        this.resetTimer();
+
+        // 4. Limpar qualquer estado de cartas viradas
+        this.facedCards = [];
     }
 
     createCards(jsonData) {
@@ -35,6 +74,7 @@ export class Gameboard {
                 faces[Math.floor(i / 2)],
                 this.#element,
                 jsonData,
+                () => {} // Uma função vazia para o onClick, já que a lógica do clique não está neste ramo
             );
             this.board.push(card);
         }
@@ -46,18 +86,14 @@ export class Gameboard {
         const positions = [];
 
         this.board.forEach((card) => {
-            if (card.isFace) {
-                return;
-            }
-
+            card.isFace = false; // Garante que todas as cartas estejam desviradas antes de embaralhar
             let x = 0;
             let y = 0;
             do {
                 x = Math.floor(Math.random() * this.BOARD_SIZE);
                 y = Math.floor(Math.random() * this.BOARD_SIZE);
             } while (
-                positions.some((pos) => pos.x === x && pos.y === y) ||
-                this.facedCards.some((card) => card.x === x && card.y === y)
+                positions.some((pos) => pos.x === x && pos.y === y)
             );
 
             card.x = x;
