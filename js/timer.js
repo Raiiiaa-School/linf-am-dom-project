@@ -41,8 +41,12 @@ export class Timer {
         }
     }
 
-    _showOverlay() {
+    _showOverlay(text = "Tempo esgotado! As cartas vão ser baralhadas.") {
         const overlay = document.getElementById("overlay");
+
+        const paragraph = (overlay.querySelector("p"));
+        
+        paragraph .textContent = text;
         if (overlay) {
             overlay.classList.remove("hidden");
             setTimeout(() => {

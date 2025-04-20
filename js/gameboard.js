@@ -28,36 +28,66 @@ export class Gameboard {
      * @type {boolean}
      */
     canFlip = true;
+    /**
+     * @type {number}
+     */
+    matchedPairs = 0;
+    /**
+     * @type {number}
+     */
+    totalPairs = (this.BOARD_SIZE * this.BOARD_SIZE) / 2;
+    /**
+     * @type {boolean}
+     */
+    audioInitialized = false;
 
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
 
-        this.timer = new Timer (() => {
-            this.shuffleCards();
+        this.timer = new Timer(() => {
+            this.shuffleUnmatchedCards();
         });
-    
-        this.timer.start();
+
+        // Iniciar o timer após a primeira interação
+        window.addEventListener('click', this.initAudioAndStartGame, { once: true });
+        window.addEventListener('keydown', this.initAudioAndStartGame, { once: true });
 
         window.addEventListener("keydown", (e) => {
             if (e.code === "Space") {
-                this.resetTimer();
+                this.resetGame();
             }
         });
     }
 
-    resetTimer() {
-        if (this.timer) {
-            this.timer.reset();
+    initAudioAndStartGame = () => {
+        if (!this.audioInitialized) {
+            this.setupAudio();
             this.timer.start();
+            this.audioInitialized = true;
         }
     }
 
+    resetGame() {
+        console.log("Restarting the game...");
+        this.canFlip = false;
+        this.matchedPairs = 0;
+        this.board.forEach(card => {
+            card.isFace = false;
+            card.updateBackFace();
+            card.resetMatch();
+        });
+        this.facedCards = [];
+        this.shuffleCards();
+        this.timer.reset();
+        this.timer.start();
+        this.canFlip = true;
+    }
+
     async initialize() {
-        this.setupAudio();
         const jsonData = await this.loadJSON("./assets/oitavos.json");
         this.createCards(jsonData);
-        // Adicionar o timer que já está implementado no outro ramo
+        // O timer e o áudio são iniciados após a interação do usuário
     }
 
     createCards(jsonData) {
@@ -67,30 +97,29 @@ export class Gameboard {
                 faces[Math.floor(i / 2)],
                 this.#element,
                 jsonData,
-                this.handleCardClick // Passa a função para ser chamada quando é clicada
+                this.handleCardClick
             );
             this.board.push(card);
         }
 
-        
         this.shuffleCards();
     }
 
     handleCardClick = (card) => {
-        this.sounds.flip.play();
+        if (this.audioInitialized) {
+            this.sounds.flip.play().catch(error => console.error("Erro ao reproduzir som de flip:", error));
+        }
 
         if (!this.canFlip || card.isFace || this.facedCards.length >= 2 || card.isMatched()) {
             return;
         }
 
-        card.flip();
+        card.updateFace();
         this.facedCards.push(card);
 
         if (this.facedCards.length === 2) {
             this.canFlip = false;
-            setTimeout(() => {
-                this.checkMatch();
-            }, 1000);
+            this.checkMatch();
         }
     }
 
@@ -98,34 +127,50 @@ export class Gameboard {
         if (this.facedCards.length === 2) {
             const [card1, card2] = this.facedCards;
             if (card1.compare(card2)) {
-                this.sounds.success.play();
+                if (this.audioInitialized) {
+                    this.sounds.success.play().catch(error => console.error("Erro ao reproduzir som de sucesso:", error));
+                }
                 card1.handleMatch();
                 card2.handleMatch();
                 this.facedCards = [];
                 this.canFlip = true;
-                // Lógica de vitória estará no outro ramo da lógica de jogo
+                this.matchedPairs++;
+                console.log("Matched Pairs", this.matchedPairs);
+                console.log("Total Pairs", this.totalPairs);
+                if (this.matchedPairs === this.totalPairs) {
+                    this.endGame();
+                }
             } else {
-                this.sounds.hide.play();
+                if (this.audioInitialized) {
+                    this.sounds.hide.play().catch(error => console.error("Erro ao reproduzir som de hide:", error));
+                }
                 setTimeout(() => {
                     this.unflipCards();
-                }, 1500);
-            }
+                }, 1000);
+            } 
         }
     }
 
     unflipCards() {
         this.facedCards.forEach(card => {
-            card.unflipVisual(); // Usar o método público para virar as cartas
+            card.updateBackFace();
         });
         this.facedCards = [];
         this.canFlip = true;
     }
 
     shuffleCards() {
-        this.sounds.hide.play();
-
+        if (this.audioInitialized) {
+            this.sounds.hide.play().catch(error => console.error("Erro ao reproduzir som de hide:", error));
+        }
         const positions = [];
 
+        this.facedCards.forEach((card) => {
+            positions.push({
+                x: card.x, y: card.y
+            })
+        });
+        
         this.board.forEach((card) => {
             if (card.isFace) {
                 return;
@@ -137,8 +182,7 @@ export class Gameboard {
                 x = Math.floor(Math.random() * this.BOARD_SIZE);
                 y = Math.floor(Math.random() * this.BOARD_SIZE);
             } while (
-                positions.some((pos) => pos.x === x && pos.y === y) ||
-                this.facedCards.some((card) => card.x === x && card.y === y)
+                positions.some((pos) => pos.x === x && pos.y === y)
             );
 
             card.x = x;
@@ -147,6 +191,49 @@ export class Gameboard {
 
             card.render();
         });
+    }
+
+    shuffleUnmatchedCards() {
+        if (this.audioInitialized) {
+            this.sounds.hide.play().catch(error => console.error("Erro ao reproduzir som de hide:", error));
+        }
+        const unmatchedCards = this.board.filter(card => !card.isMatched() && !card.isFace);
+        const positions = [];
+
+        unmatchedCards.forEach((card) => {
+            let x = 0;
+            let y = 0;
+            do {
+                x = Math.floor(Math.random() * this.BOARD_SIZE);
+                y = Math.floor(Math.random() * this.BOARD_SIZE);
+            } while (
+                positions.some((pos) => pos.x === x && pos.y === y)
+            );
+
+            card.x = x;
+            card.y = y;
+            positions.push({ x, y });
+
+            card.render();
+        });
+
+        this.timer.start();
+    }
+
+    endGame() {
+        if (this.audioInitialized) {
+            this.sounds.win.play().catch(error => console.error("Erro ao reproduzir som de vitória:", error));
+        }
+        console.log("Game Over! All pairs matched.");
+        this.timer.reset();
+        this.timer._showOverlay("Vitória!");
+
+        // Adicionar lógica para mostrar mensagem de vitória, overlay, etc.
+        // Reiniciar o jogo após um breve delay
+        setTimeout(() => {
+            this.resetGame();
+            this.timer.reset();
+        }, 3000); // Reinicia após 3 segundos (ajuste conforme necessário)
     }
 
     async loadJSON(path) {
@@ -171,10 +258,16 @@ export class Gameboard {
         this.sounds.hide = document.querySelector("#hideSnd");
         this.sounds.win = document.querySelector("#goalSnd");
 
-        this.sounds.background.volume = 0.05;
-        this.sounds.flip.volume = 0.5;
-        this.sounds.success.volume = 0.5;
-        this.sounds.hide.volume = 0.5;
-        this.sounds.win.volume = 0.5;
+        if (this.sounds.background) this.sounds.background.volume = 0.05;
+        if (this.sounds.flip) this.sounds.flip.volume = 0.5;
+        if (this.sounds.success) this.sounds.success.volume = 0.5;
+        if (this.sounds.hide) this.sounds.hide.volume = 0.5;
+        if (this.sounds.win) this.sounds.win.volume = 0.5;
+
+        if (this.sounds.background) {
+            this.sounds.background.play().catch(error => {
+                console.error("Erro ao iniciar a música de fundo:", error);
+            });
+        }
     }
 }
