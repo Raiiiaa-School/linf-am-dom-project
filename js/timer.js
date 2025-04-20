@@ -2,10 +2,15 @@
  * Class that represents a timer for the game
  */
 export class Timer {
+    /**
+     * @param {number} duration - The duration of the timer in milliseconds.
+     * @param {boolean} loop - Whether the timer should loop after completion.
+     */
     constructor(duration, loop = false) {
         this.duration = duration;
         this.loop = loop;
         this.remaining = duration;
+        this.startTime = null;
         this.isRunning = false;
         this.timeoutId = null;
         this.oncomplete = null; // Callback function for timer completion/restart
@@ -14,6 +19,7 @@ export class Timer {
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
+        this.startTime = Date.now();
         this.timeoutId = setTimeout(() => {
             if (this.oncomplete) {
                 this.oncomplete(); // Fire the event
@@ -30,6 +36,8 @@ export class Timer {
         if (!this.isRunning) return;
         this.isRunning = false;
         clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+        this.remaining -= Date.now() - this.startTime;
     }
 
     stop(reset = false) {
@@ -55,7 +63,10 @@ export class Timer {
     }
 
     getRemaining() {
-        return this.remaining;
+        if (!this.isRunning) {
+            return this.remaining;
+        }
+        return this.remaining - (Date.now() - this.startTime);
     }
 
     setOnComplete(callback) {

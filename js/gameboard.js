@@ -1,5 +1,6 @@
 import { CountryFaces, Card } from "./card.js";
 import { Sounds } from "./sound.js";
+import { Timer } from "./timer.js";
 
 /**
  * Represents a game board with sounds and board properties.
@@ -13,6 +14,14 @@ export class Gameboard {
      * @type {Sounds}
      */
     sounds;
+    /**
+     * @type {Timer}
+     */
+    shuffleTimer = new Timer(45000); // 45s
+    /**
+     * @type {Timer}
+     */
+    secondsTimer = new Timer(1000, true); // 1s
     /**
      * @type {Array<Card>}
      */
@@ -29,11 +38,30 @@ export class Gameboard {
      * @type {HTMLDivElement}
      */
     #element;
+    /**
+     * @type {HTMLProgressElement}
+     */
+    progressElement;
 
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
+        this.progressElement = document.querySelector("#time");
         Card.gameboard = this;
+
+        this.shuffleTimer.setOnComplete(() => {
+            this.shuffleCards();
+            this.progressElement.value = 0;
+            this.progressElement.classList.remove("blink");
+        });
+
+        this.secondsTimer.setOnComplete(() => {
+            this.progressElement.value++;
+
+            if (this.shuffleTimer.getRemaining() <= 5000) {
+                this.progressElement.classList.add("blink");
+            }
+        });
     }
 
     /**
@@ -42,6 +70,9 @@ export class Gameboard {
     start() {
         this.sounds.background.play();
         this.shuffleCards();
+        this.progressElement.value = 0;
+        this.shuffleTimer.start();
+        this.secondsTimer.start();
     }
 
     /**

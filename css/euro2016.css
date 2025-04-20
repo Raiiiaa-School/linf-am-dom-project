@@ -150,8 +150,11 @@ dialog .close svg {
 }
 
 /* classe que anima a progress bar quando é adicionada à sua lista de classes*/
-.warning {
-    animation: wa alternate 1s infinite;
+.blink[value]::-webkit-progress-bar,
+.blink[value]::-moz-progress-bar {
+    -moz-animation: blink alternate 1s infinite ease-in-out;
+    -webkit-animation: blink alternate 1s infinite ease-in-out;
+    animation: blink alternate 1s infinite ease-in-out;
 }
 
 @keyframes showFace {
@@ -207,5 +210,32 @@ dialog .close svg {
     to {
         scale: 1;
         z-index: 0;
+    }
+}
+
+@keyframes blink {
+    from {
+        background-color: dodgerblue;
+    }
+    to {
+        background-color: orangered;
+    }
+}
+
+@-webkit-keyframes blink {
+    from {
+        background-color: dodgerblue;
+    }
+    to {
+        background-color: orangered;
+    }
+}
+
+@-moz-keyframes blink {
+    from {
+        background-color: dodgerblue;
+    }
+    to {
+        background-color: orangered;
     }
 }
