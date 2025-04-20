@@ -42,17 +42,23 @@ export class Gameboard {
      * @type {HTMLProgressElement}
      */
     progressElement;
+    /**
+     * @type {HTMLDivElement}
+     */
+    overlayElement;
 
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
         this.progressElement = document.querySelector("#time");
+        this.overlayElement = document.querySelector(".overlay");
         Card.gameboard = this;
 
         this.shuffleTimer.setOnComplete(() => {
             this.shuffleCards();
             this.progressElement.value = 0;
             this.progressElement.classList.remove("blink");
+            this.overlayElement.classList.add("hidden");
         });
 
         this.secondsTimer.setOnComplete(() => {
@@ -60,6 +66,7 @@ export class Gameboard {
 
             if (this.shuffleTimer.getRemaining() <= 5000) {
                 this.progressElement.classList.add("blink");
+                this.overlayElement.classList.remove("hidden");
             }
         });
     }

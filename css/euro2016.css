@@ -106,6 +106,36 @@ dialog .close svg {
     fill: #fff;
 }
 
+/*Formatação da progress bar*/
+#time {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    color: blue;
+    border: none;
+}
+
+/* classe que anima a progress bar quando é adicionada à sua lista de classes*/
+.blink[value]::-webkit-progress-bar,
+.blink[value]::-moz-progress-bar {
+    -moz-animation: blink alternate 1000ms infinite ease-in-out;
+    -webkit-animation: blink alternate 1000ms infinite ease-in-out;
+    animation: blink alternate 1000ms infinite ease-in-out;
+}
+
+/* Overlay */
+.overlay {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(
+        circle,
+        rgba(0, 0, 0, 0) 70%,
+        rgba(255, 0, 0, 0.5) 100%
+    );
+    animation: fadeOut 1000ms alternate infinite;
+}
+
 .card {
     position: absolute;
     transform-style: preserve-3d;
@@ -138,23 +168,6 @@ dialog .close svg {
 
 .hidden {
     display: none;
-}
-
-/*Formatação da progress bar*/
-#time {
-    position: fixed;
-    bottom: 0px;
-    width: 100%;
-    color: blue;
-    border: none;
-}
-
-/* classe que anima a progress bar quando é adicionada à sua lista de classes*/
-.blink[value]::-webkit-progress-bar,
-.blink[value]::-moz-progress-bar {
-    -moz-animation: blink alternate 1s infinite ease-in-out;
-    -webkit-animation: blink alternate 1s infinite ease-in-out;
-    animation: blink alternate 1s infinite ease-in-out;
 }
 
 @keyframes showFace {
@@ -237,5 +250,14 @@ dialog .close svg {
     }
     to {
         background-color: orangered;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
     }
 }
