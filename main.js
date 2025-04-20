@@ -7,6 +7,8 @@ let gameboard;
 
 window.addEventListener("load", init, false);
 
+
+
 async function init() {
     gameboard = new Gameboard();
     const jsonData = await gameboard.loadJSON("./assets/oitavos.json");
