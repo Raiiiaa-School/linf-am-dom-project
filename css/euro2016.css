@@ -71,6 +71,41 @@ h1 {
     background-color: #2d5a63; /* Cor de fundo do contêiner */
 }
 
+/* Modal */
+dialog {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+dialog .close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+
+    width: 1.5rem;
+    aspect-ratio: 1;
+
+    background-color: hsl(0, 70%, 45%);
+    border: none;
+    border-radius: 0.5rem;
+
+    transition: all 150ms;
+}
+
+dialog .close:hover {
+    background-color: hsl(0, 70%, 35%);
+}
+
+dialog .close:active {
+    scale: 0.98;
+}
+
+dialog .close svg {
+    width: 100%;
+    height: 100%;
+    fill: #fff;
+}
+
 .card {
     position: absolute;
     transform-style: preserve-3d;
