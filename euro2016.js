@@ -6,7 +6,7 @@ async function init() {
     const gameboard = new Gameboard();
     const jsonData = await gameboard.loadJSON("./assets/oitavos.json");
     gameboard.createCards(jsonData);
-    gameboard.start();
+    await gameboard.start();
 }
 
 /**

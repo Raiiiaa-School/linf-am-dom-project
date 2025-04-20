@@ -45,6 +45,14 @@ export class Card {
      */
     y;
     /**
+     * @type {number}
+     */
+    originalX;
+    /**
+     * @type {number}
+     */
+    originalY;
+    /**
      * @type {boolean}
      */
     isFace = true;
@@ -191,5 +199,13 @@ export class Card {
     render() {
         this.#element.style.left = `${this.x * this.face.width}px`;
         this.#element.style.top = `${this.y * this.face.height}px`;
+    }
+
+    /**
+     * Animates the card.
+     * @param {(element: HTMLDivElement) => void} callback - the callback function to be called when the animation is complete. The callback function is called with the card element as its argument.
+     */
+    animate(callback) {
+        callback(this.#element);
     }
 }

@@ -142,7 +142,9 @@ dialog .close svg {
     transition:
         scale 100ms,
         filter 100ms,
-        box-shadow 100ms;
+        box-shadow 100ms,
+        left 300ms,
+        top 300ms;
     backface-visibility: visible;
 }
 

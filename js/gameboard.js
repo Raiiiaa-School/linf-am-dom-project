@@ -55,7 +55,7 @@ export class Gameboard {
         Card.gameboard = this;
 
         this.shuffleTimer.setOnComplete(() => {
-            this.shuffleCards();
+            this.getShuffledCardPositions();
             this.progressElement.value = 0;
             this.progressElement.classList.remove("blink");
             this.overlayElement.classList.add("hidden");
@@ -74,9 +74,9 @@ export class Gameboard {
     /**
      * Starts the game.
      */
-    start() {
+    async start() {
         this.sounds.background.play();
-        this.shuffleCards();
+        await this.shuffleCards();
         this.progressElement.value = 0;
         this.shuffleTimer.start();
         this.secondsTimer.start();
@@ -188,11 +188,12 @@ export class Gameboard {
 
     /**
      * Shuffles the cards.
+     * @returns {Array<{x: number, y: number}>} - An array of new positions for the cards.
      */
-    shuffleCards() {
+    getShuffledCardPositions() {
         const positions = [];
 
-        this.cards.forEach((card) => {
+        const newPositions = this.cards.map((card) => {
             let x = 0;
             let y = 0;
             do {
@@ -202,13 +203,75 @@ export class Gameboard {
                 positions.some((pos) => pos.x === x && pos.y === y) ||
                 this.matchedCards.some((card) => card.x === x && card.y === y)
             );
-
-            card.x = x;
-            card.y = y;
             positions.push({ x, y });
-
-            card.render();
+            return { x, y };
         });
+        return newPositions;
+    }
+
+    /**
+     * Animates the cards to the center of the board and then to their new positions.
+     * @param {Array<{x: number, y: number}>} newPositions - An array of new positions for the cards.
+     * @param {number} animationDelay - Delay (ms) between card movements.
+     */
+    async animateShuffle(newPositions, animationDelay) {
+        // Um pouco de magic numbering aqui :D
+        const centerPosition = {
+            x:
+                this.#element.offsetWidth / 2 -
+                this.cards[0].face.width / 2 -
+                this.cards[0].face.width / 6,
+            y:
+                this.#element.offsetHeight / 2 -
+                this.cards[0].face.height / 2 -
+                this.cards[0].face.height / 6,
+        };
+
+        // First animation: Move cards to center one by one
+        for (const card of this.cards) {
+            await new Promise((resolve) => {
+                // Store the original position for later
+                card.originalX = card.x;
+                card.originalY = card.y;
+
+                // Update card's coordinates to match the center position
+                card.x = centerPosition.x / card.face.width;
+                card.y = centerPosition.y / card.face.height;
+
+                card.animate((el) => {
+                    el.style.left = `${centerPosition.x}px`;
+                    el.style.top = `${centerPosition.y}px`;
+                });
+                setTimeout(resolve, animationDelay);
+            });
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, animationDelay));
+
+        // Second animation: Move cards to their new positions one by one
+        for (let i = 0; i < this.cards.length; i++) {
+            const card = this.cards[i];
+            const newPos = newPositions[i];
+
+            await new Promise((resolve) => {
+                card.x = newPos.x;
+                card.y = newPos.y;
+                card.animate((el) => {
+                    el.style.left = `${newPos.x * card.face.width}px`;
+                    el.style.top = `${newPos.y * card.face.height}px`;
+                });
+                setTimeout(resolve, animationDelay);
+            });
+        }
+    }
+
+    /**
+     * Shuffles the cards with a visual effect.
+     * @param {number} animationDelay - Delay (ms) between card movements.
+     */
+    async shuffleCards(animationDelay = 50) {
+        const newPositions = this.getShuffledCardPositions();
+        await this.animateShuffle(newPositions, animationDelay);
     }
 
     /**
