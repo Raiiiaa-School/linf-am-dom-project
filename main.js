@@ -36,6 +36,8 @@ let faces = []; // Array que armazena objectos face que contêm posicionamentos 
 
 window.addEventListener("load", init, false);
 
+
+
 async function init() {
     gameboard = new Gameboard();
     const jsonData = await gameboard.loadJSON("./assets/oitavos.json");

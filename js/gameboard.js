@@ -1,5 +1,6 @@
 import { CountryFaces, Card } from "./card.js";
 import { Sounds } from "./sound.js";
+import { Timer } from "./timer.js";
 
 /**
  * Represents a game board with sounds and board properties.
@@ -19,13 +20,44 @@ export class Gameboard {
      */
     facedCards = [];
     /**
-     * @type {HTMLDivElement}
+     * @type {Timer}
      */
+    timer;
     #element;
+    /**
+     * @type {boolean}
+     */
+    canFlip = true;
 
     constructor() {
         this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
+
+        this.timer = new Timer (() => {
+            this.shuffleCards();
+        });
+    
+        this.timer.start();
+
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                this.resetTimer();
+            }
+        });
+    }
+
+    resetTimer() {
+        if (this.timer) {
+            this.timer.reset();
+            this.timer.start();
+        }
+    }
+
+    async initialize() {
+        this.setupAudio();
+        const jsonData = await this.loadJSON("./assets/oitavos.json");
+        this.createCards(jsonData);
+        // Adicionar o timer que já está implementado no outro ramo
     }
 
     createCards(jsonData) {
@@ -35,14 +67,63 @@ export class Gameboard {
                 faces[Math.floor(i / 2)],
                 this.#element,
                 jsonData,
+                this.handleCardClick // Passa a função para ser chamada quando é clicada
             );
             this.board.push(card);
         }
 
+        
         this.shuffleCards();
     }
 
+    handleCardClick = (card) => {
+        this.sounds.flip.play();
+
+        if (!this.canFlip || card.isFace || this.facedCards.length >= 2 || card.isMatched()) {
+            return;
+        }
+
+        card.flip();
+        this.facedCards.push(card);
+
+        if (this.facedCards.length === 2) {
+            this.canFlip = false;
+            setTimeout(() => {
+                this.checkMatch();
+            }, 1000);
+        }
+    }
+
+    checkMatch() {
+        if (this.facedCards.length === 2) {
+            const [card1, card2] = this.facedCards;
+            if (card1.compare(card2)) {
+                this.sounds.success.play();
+                card1.handleMatch();
+                card2.handleMatch();
+                this.facedCards = [];
+                this.canFlip = true;
+                // Lógica de vitória estará no outro ramo da lógica de jogo
+            } else {
+                this.sounds.hide.play();
+                setTimeout(() => {
+                    this.unflipCards();
+                }, 1500);
+            }
+        }
+    }
+
+    unflipCards() {
+        this.facedCards.forEach(card => {
+            card.unflipVisual(); // Usar o método público para virar as cartas
+        });
+        this.facedCards = [];
+        this.canFlip = true;
+    }
+
     shuffleCards() {
+        this.sounds.hide.play();
+
         const positions = [];
 
         this.board.forEach((card) => {
@@ -90,9 +171,10 @@ export class Gameboard {
         this.sounds.hide = document.querySelector("#hideSnd");
         this.sounds.win = document.querySelector("#goalSnd");
 
-        // definições de volume;
-        game.sounds.background.volume = 0.05; // o volume varia entre 0 e 1
-
-        // nesta pode-se mexer se for necessário acrescentar ou configurar mais sons
+        this.sounds.background.volume = 0.05;
+        this.sounds.flip.volume = 0.5;
+        this.sounds.success.volume = 0.5;
+        this.sounds.hide.volume = 0.5;
+        this.sounds.win.volume = 0.5;
     }
 }

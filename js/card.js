@@ -33,13 +33,20 @@ export class Card {
      * @type {Face}
      */
     #face;
+    /**
+     * @type {function}
+     */
+    #onClickCallback;
 
     /**
      * @param {keyof typeof CountryFaces} face - The face of the card.
      * @param {HTMLElement} parent - Define the parent that to append the card
+     * @param {object} jsonData - JSON data for card faces.
+     * @param {function} onClick - Callback function to be called on click.
      */
-    constructor(face, parent, jsonData) {
+    constructor(face, parent, jsonData, onClick) {
         this.#face = new Face(face, jsonData);
+        this.#onClickCallback = onClick;
         this.createElement(parent);
     }
 
@@ -55,13 +62,15 @@ export class Card {
             this.#face.h
         }px`;
 
-        this.#element.addEventListener("click", this.handleClick, {
-            signal: this.controller.signal,
-        });
+        this.#element.addEventListener("click", this.handleClick);
         parent.appendChild(this.#element);
     }
 
-    handleClick() {}
+    handleClick = () => {
+        if (this.#onClickCallback) {
+            this.#onClickCallback(this);
+        }
+    }
 
     /**
      * @param {Card} card
@@ -76,10 +85,25 @@ export class Card {
 
     handleMatch() {
         this.controller.abort();
+        this.#element.classList.add("matched");
     }
 
     render() {
         this.#element.style.left = `${this.x * this.#face.width}px`;
         this.#element.style.top = `${this.y * this.#face.height}px`;
+    }
+
+    flip() {
+        this.isFace = true;
+        this.#element.classList.add("faced");
+    }
+
+    unflipVisual() { // Novo método público para virar visualmente
+        this.isFace = false;
+        this.#element.classList.remove("faced");
+    }
+
+    isMatched() {
+        return this.#element.classList.contains("matched");
     }
 }
