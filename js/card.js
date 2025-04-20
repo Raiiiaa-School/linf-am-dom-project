@@ -54,6 +54,7 @@ export class Card {
         this.#face = new Face(face, jsonData);
         this.#onClickCallback = onClick;
         this.createElement(parent);
+        this.updateBackFace();
     }
 
     createElement(parent) {
@@ -102,7 +103,16 @@ export class Card {
 
     resetMatch() {
         this.#element.classList.remove("matched");
+
+    }
+
+    renderFace() {
+        this.#element.style.backgroundPositionX = `-${this.#face.x}px`;
+        this.#element.style.backgroundPositionY = `-${this.#face.y}px`;
+
         this.#element.classList.add("matched");
+
+
     }
 
     render() {
@@ -110,14 +120,18 @@ export class Card {
         this.#element.style.top = `${this.y * this.#face.height}px`;
     }
 
-    flip() {
+    updateFace() {
         this.isFace = true;
-        this.#element.classList.add("faced");
+        //this.#element.classList.add("faced");
+        this.#face.updateFace();
+        this.renderFace();
     }
 
-    unflipVisual() { // Novo método público para virar visualmente
+    updateBackFace() { // Novo método público para virar visualmente
         this.isFace = false;
-        this.#element.classList.remove("faced");
+        //this.#element.classList.remove("faced");
+        this.#face.updateBackFace();
+        this.renderFace();
     }
 
     isMatched() {

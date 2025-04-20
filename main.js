@@ -7,12 +7,9 @@ let gameboard;
 
 window.addEventListener("load", init, false);
 
-
-
 async function init() {
     gameboard = new Gameboard();
-    const jsonData = await gameboard.loadJSON("./assets/oitavos.json");
-    gameboard.createCards(jsonData);
+    await gameboard.initialize(); // Usar o método initialize que agora inclui o loadJSON e createCards
 }
 
 /**
