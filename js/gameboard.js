@@ -127,18 +127,14 @@ export class Gameboard {
         const positions = [];
 
         this.board.forEach((card) => {
-            if (card.isFace) {
-                return;
-            }
-
+            card.isFace = false; // Garante que todas as cartas estejam desviradas antes de embaralhar
             let x = 0;
             let y = 0;
             do {
                 x = Math.floor(Math.random() * this.BOARD_SIZE);
                 y = Math.floor(Math.random() * this.BOARD_SIZE);
             } while (
-                positions.some((pos) => pos.x === x && pos.y === y) ||
-                this.facedCards.some((card) => card.x === x && card.y === y)
+                positions.some((pos) => pos.x === x && pos.y === y)
             );
 
             card.x = x;
