@@ -37,14 +37,20 @@ export class Card {
      * @type {function}
      */
     #onClickCallback;
+    /**
+     * @type {function}
+     */
+    #onClickCallback;
 
     /**
      * @param {keyof typeof CountryFaces} face - The face of the card.
      * @param {HTMLElement} parent - Define the parent that to append the card
      * @param {object} jsonData - JSON data for card faces.
      * @param {function} onClick - Callback function to be called on click.
+     * @param {object} jsonData - JSON data for card faces.
+     * @param {function} onClick - Callback function to be called on click.
      */
-    constructor(face, parent, jsonData, onClick) {
+    constructor(face, parent, jsonData, onClick, onClick) {
         this.#face = new Face(face, jsonData);
         this.#onClickCallback = onClick;
         this.createElement(parent);
@@ -64,9 +70,15 @@ export class Card {
         }px`;
 
         this.#element.addEventListener("click", this.handleClick);
+        this.#element.addEventListener("click", this.handleClick);
         parent.appendChild(this.#element);
     }
 
+    handleClick = () => {
+        if (this.#onClickCallback) {
+            this.#onClickCallback(this);
+        }
+    }
     handleClick = () => {
         if (this.#onClickCallback) {
             this.#onClickCallback(this);
@@ -91,11 +103,16 @@ export class Card {
 
     resetMatch() {
         this.#element.classList.remove("matched");
+
     }
 
     renderFace() {
         this.#element.style.backgroundPositionX = `-${this.#face.x}px`;
         this.#element.style.backgroundPositionY = `-${this.#face.y}px`;
+
+        this.#element.classList.add("matched");
+
+
     }
 
     render() {

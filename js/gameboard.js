@@ -172,10 +172,7 @@ export class Gameboard {
         });
         
         this.board.forEach((card) => {
-            if (card.isFace) {
-                return;
-            }
-
+            card.isFace = false; // Garante que todas as cartas estejam desviradas antes de embaralhar
             let x = 0;
             let y = 0;
             do {
