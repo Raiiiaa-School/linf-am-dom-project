@@ -17,11 +17,11 @@ export class Gameboard {
     /**
      * @type {Timer}
      */
-    shuffleTimer = new Timer(4500, true); // 45s
+    shuffleTimer = new Timer(45000, true); // 45s
     /**
      * @type {Timer}
      */
-    secondsTimer = new Timer(100, true); // 1s
+    secondsTimer = new Timer(1000, true); // 1s
     /**
      * @type {Array<Card>}
      */
