@@ -192,41 +192,27 @@ export class Gameboard {
      * @returns {Array<{x: number, y: number}>} - An array of new positions for the cards.
      */
     getShuffledCardPositions() {
-        const positions = [];
-        const availablePositions = [];
+        const positions = new Set();
 
-        // First, create a list of all possible positions
-        for (let x = 0; x < this.BOARD_SIZE; x++) {
-            for (let y = 0; y < this.BOARD_SIZE; y++) {
-                availablePositions.push({ x, y });
-            }
-        }
-
-        // Remove positions that are occupied by matched cards
         this.matchedCards.forEach((card) => {
-            const index = availablePositions.findIndex(
-                (pos) => pos.x === card.x && pos.y === card.y,
-            );
-            if (index !== -1) {
-                availablePositions.splice(index, 1);
-            }
-            positions.push({ x: card.x, y: card.y }); // Keep matched cards in their positions
+            positions.add(`${card.x},${card.y}`);
         });
 
-        // Shuffle remaining available positions
-        for (let i = availablePositions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [availablePositions[i], availablePositions[j]] = [
-                availablePositions[j],
-                availablePositions[i],
-            ];
-        }
-
-        // Assign new positions to unmatched cards
-        this.cards.forEach((card, index) => {
-            if (availablePositions.length > 0) {
-                positions.push(availablePositions.pop());
+        // Shuffle unmatched cards
+        this.cards.forEach((card) => {
+            if (card.isMatched) {
+                return;
             }
+
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * this.BOARD_SIZE);
+                y = Math.floor(Math.random() * this.BOARD_SIZE);
+            } while (positions.has(`${x},${y}`)); // Check for unique position
+
+            card.x = x;
+            card.y = y;
+            positions.add(`${x},${y}`);
         });
 
         return positions;
@@ -234,7 +220,7 @@ export class Gameboard {
 
     /**
      * Animates the cards to the center of the board and then to their new positions.
-     * @param {Array<{x: number, y: number}>} newPositions - An array of new positions for the cards.
+     * @param {Set<string>} newPositions - An array of new positions for the cards.
      * @param {number} animationDelay - Delay (ms) between card movements.
      */
     async animateShuffle(newPositions, animationDelay) {
@@ -272,10 +258,18 @@ export class Gameboard {
 
         await new Promise((resolve) => setTimeout(resolve, animationDelay));
 
+        const positions = [];
+        newPositions.forEach((entry) => {
+            const position = entry.split(",");
+            positions.push({
+                x: parseInt(position[0]),
+                y: parseInt(position[1]),
+            });
+        });
         // Second animation: Move cards to their new positions one by one
         for (let i = 0; i < this.cards.length; i++) {
             const card = this.cards[i];
-            const newPos = newPositions[i];
+            const newPos = positions[i];
 
             await new Promise((resolve) => {
                 card.x = newPos.x;
