@@ -157,10 +157,6 @@ export class Gameboard {
         const positions = [];
 
         this.cards.forEach((card) => {
-            if (card.isFace) {
-                return;
-            }
-
             let x = 0;
             let y = 0;
             do {

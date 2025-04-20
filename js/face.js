@@ -57,7 +57,7 @@ export class Face {
         this.width = jsonData.frames[face].frame.w;
         this.height = jsonData.frames[face].frame.h;
 
-        this.showBack();
+        this.showFace();
 
         this.country = face.split(".")[0];
     }

@@ -1,5 +1,6 @@
 import { Face } from "./face.js";
 import { Gameboard } from "./gameboard.js";
+import { Timer } from "./timer.js";
 
 export const CountryFaces = Object.freeze({
     GERMANY: "Alemanha.png",
@@ -18,13 +19,23 @@ export const CountryFaces = Object.freeze({
  */
 export class Card {
     /**
+     * @type {number}
+     */
+    static CARD_FLIP_DURATION = 300;
+    /**
      * @type {Gameboard}
      */
     static gameboard;
+
     /**
      * @type {AbortController}
      */
     controller = new AbortController();
+    /**
+     * @type {Timer}
+     */
+    flipTimer = new Timer(Card.CARD_FLIP_DURATION / 2);
+
     /**
      * @type {number}
      */
@@ -36,7 +47,7 @@ export class Card {
     /**
      * @type {boolean}
      */
-    isFace = false;
+    isFace = true;
     /**
      * @type {boolean}
      */
@@ -61,6 +72,7 @@ export class Card {
     constructor(face, parent, jsonData) {
         this.face = new Face(face, jsonData);
         this.createElement(parent);
+        this.flipTimer.setOnComplete(() => this.renderFace());
     }
 
     /**
@@ -69,7 +81,6 @@ export class Card {
      */
     createElement(parent) {
         this.#element = document.createElement("div");
-        this.#element.style.position = "absolute";
         this.#element.style.backgroundImage = Face.URL;
         this.#element.style.backgroundSize = `${this.face.w}px ${
             this.face.h
@@ -79,6 +90,7 @@ export class Card {
 
         this.#element.classList.add("card");
 
+        this.showBack();
         this.renderFace();
 
         this.#element.addEventListener("click", this.handleClickFn, {
@@ -115,7 +127,11 @@ export class Card {
     showFace() {
         this.isFace = true;
         this.face.showFace();
-        this.renderFace();
+        if (this.#element.classList.contains("back")) {
+            this.#element.classList.remove("back");
+        }
+        this.#element.classList.add("face");
+        this.flipTimer.start();
     }
 
     /**
@@ -124,7 +140,11 @@ export class Card {
     showBack() {
         this.isFace = false;
         this.face.showBack();
-        this.renderFace();
+        if (this.#element.classList.contains("face")) {
+            this.#element.classList.remove("face");
+        }
+        this.#element.classList.add("back");
+        this.flipTimer.start();
     }
 
     /**
@@ -148,7 +168,12 @@ export class Card {
      * Handles the match event on the card.
      */
     handleMatch() {
-        this.controller.abort();
+        const timer = new Timer(200);
+        timer.start();
+        timer.setOnComplete(() => {
+            this.#element.classList.add("matched");
+            this.controller.abort();
+        });
     }
 
     /**
