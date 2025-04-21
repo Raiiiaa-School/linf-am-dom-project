@@ -1,4 +1,5 @@
 import { CountryFaces, Card } from "./card.js";
+import { Dialog } from "./dialog.js";
 import { Sounds } from "./sound.js";
 import { Timer } from "./timer.js";
 
@@ -10,10 +11,7 @@ export class Gameboard {
      * @type {number}
      */
     BOARD_SIZE = 4;
-    /**
-     * @type {Sounds}
-     */
-    sounds;
+
     /**
      * @type {Timer}
      */
@@ -22,6 +20,11 @@ export class Gameboard {
      * @type {Timer}
      */
     secondsTimer = new Timer(1000, true); // 1s
+
+    /**
+     * @type {Sounds}
+     */
+    sounds;
     /**
      * @type {Array<Card>}
      */
@@ -34,6 +37,12 @@ export class Gameboard {
      * @type {Array<Card>}
      */
     selectedCards = [];
+
+    moves = 0;
+    maxCombo = 0;
+    combo = 0;
+    gameTimer = new Timer()
+
     /**
      * @type {HTMLDivElement}
      */
@@ -77,6 +86,11 @@ export class Gameboard {
      */
     async start() {
         this.sounds.background.play();
+
+        this.cards.forEach((card) => {
+            card.showBack();
+        });
+
         await this.shuffleCards();
         this.progressElement.value = 0;
         this.shuffleTimer.start();
@@ -185,6 +199,23 @@ export class Gameboard {
      */
     win() {
         this.sounds.win.play();
+        this.shuffleTimer.pause();
+        this.secondsTimer.pause();
+
+        const dialog = new Dialog(document.body)
+            .addTitle("Congratulations!")
+            .addText(
+                "You won the game. Nobody cares for this game nowadays so I didn't even bother to make a score for you. Wanna try again?",
+            )
+            .addButton("Restart", (dialog) => {
+                this.start();
+                dialog.close();
+
+                this.shuffleTimer.restart();
+                this.secondsTimer.restart();
+            });
+
+        dialog.open();
     }
 
     /**
@@ -192,14 +223,14 @@ export class Gameboard {
      * @returns {Array<{x: number, y: number}>} - An array of new positions for the cards.
      */
     getShuffledCardPositions() {
-        const positions = new Set();
+        const positions = new Array(this.BOARD_SIZE * this.BOARD_SIZE);
 
         this.matchedCards.forEach((card) => {
-            positions.add(`${card.x},${card.y}`);
+            const index = this.cards.indexOf(card);
+            positions[index] = { x: card.x, y: card.y };
         });
 
-        // Shuffle unmatched cards
-        this.cards.forEach((card) => {
+        this.cards.forEach((card, index) => {
             if (card.isMatched) {
                 return;
             }
@@ -208,11 +239,12 @@ export class Gameboard {
             do {
                 x = Math.floor(Math.random() * this.BOARD_SIZE);
                 y = Math.floor(Math.random() * this.BOARD_SIZE);
-            } while (positions.has(`${x},${y}`)); // Check for unique position
+            } while (positions.some((pos) => pos.x === x && pos.y === y));
 
             card.x = x;
             card.y = y;
-            positions.add(`${x},${y}`);
+
+            positions[index] = { x, y };
         });
 
         return positions;
@@ -220,7 +252,7 @@ export class Gameboard {
 
     /**
      * Animates the cards to the center of the board and then to their new positions.
-     * @param {Set<string>} newPositions - An array of new positions for the cards.
+     * @param {Array<{x: number, y: number}>} newPositions - An array of new positions for the cards.
      * @param {number} animationDelay - Delay (ms) between card movements.
      */
     async animateShuffle(newPositions, animationDelay) {
@@ -240,11 +272,9 @@ export class Gameboard {
         for (const card of this.cards) {
             card.removeEventListeners();
             await new Promise((resolve) => {
-                // Store the original position for later
                 card.originalX = card.x;
                 card.originalY = card.y;
 
-                // Update card's coordinates to match the center position
                 card.x = centerPosition.x / card.face.width;
                 card.y = centerPosition.y / card.face.height;
 
@@ -258,15 +288,7 @@ export class Gameboard {
 
         await new Promise((resolve) => setTimeout(resolve, animationDelay));
 
-        const positions = [];
-        newPositions.forEach((entry) => {
-            const position = entry.split(",");
-            positions.push({
-                x: parseInt(position[0]),
-                y: parseInt(position[1]),
-            });
-        });
-        // Second animation: Move cards to their new positions one by one
+        const positions = newPositions;
         for (let i = 0; i < this.cards.length; i++) {
             const card = this.cards[i];
             const newPos = positions[i];

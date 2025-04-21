@@ -49,7 +49,7 @@ export class Timer {
     }
 
     restart() {
-        this.stop();
+        this.stop(true);
         this.start();
     }
 
