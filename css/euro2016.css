@@ -49,12 +49,8 @@ button:focus {
         102px
     ); /* 4 linhas com altura fixa de 102px */
     gap: 10px; /* Espaço entre as cartas */
-    width: calc(
-        4 * 102px + 3 * 10px
-    ); /* Largura total do tabuleiro (4 cartas + 3 gaps) */
-    height: calc(
-        4 * 102px + 3 * 10px
-    ); /* Altura total do tabuleiro (4 cartas + 3 gaps) */
+    width: calc(4 * 102px); /* Largura total do tabuleiro */
+    height: calc(4 * 102px); /* Altura total do tabuleiro */
     margin: 0 auto; /* Centralizar o tabuleiro horizontalmente */
     padding: 0;
     position: relative;
@@ -73,8 +69,6 @@ button:focus {
     position: relative;
     padding: 0;
     margin: auto;
-    width: calc(4 * 102px); /* Largura do tabuleiro + bordas */
-    height: calc(4 * 102px); /* Altura do tabuleiro + bordas */
     display: block;
     border: 10px solid #1f4952; /* Borda do contêiner */
     background-color: #2d5a63; /* Cor de fundo do contêiner */
@@ -151,6 +145,7 @@ dialog .buttons button {
 
 dialog .content {
     font-size: 1rem;
+    text-align: center;
 }
 
 dialog h2 {

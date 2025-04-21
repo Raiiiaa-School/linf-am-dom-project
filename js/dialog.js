@@ -28,8 +28,8 @@ export class Dialog {
         this.root.appendChild(this.#element);
     }
 
-    addTitle(text) {
-        const title = document.createElement("h2");
+    addTitle(text, heading = "h2") {
+        const title = document.createElement(heading);
         title.textContent = text;
         this.titles.appendChild(title);
         return this;
