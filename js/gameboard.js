@@ -41,7 +41,7 @@ export class Gameboard {
     moves = 0;
     maxCombo = 0;
     combo = 0;
-    gameTimer = new Timer()
+    gameTimer = new Timer();
 
     /**
      * @type {HTMLDivElement}
@@ -92,9 +92,8 @@ export class Gameboard {
         });
 
         await this.shuffleCards();
-        this.progressElement.value = 0;
-        this.shuffleTimer.start();
-        this.secondsTimer.start();
+        this.shuffleTimer.restart();
+        this.secondsTimer.restart();
     }
 
     /**
@@ -210,9 +209,6 @@ export class Gameboard {
             .addButton("Restart", (dialog) => {
                 this.start();
                 dialog.close();
-
-                this.shuffleTimer.restart();
-                this.secondsTimer.restart();
             });
 
         dialog.open();
@@ -256,6 +252,13 @@ export class Gameboard {
      * @param {number} animationDelay - Delay (ms) between card movements.
      */
     async animateShuffle(newPositions, animationDelay) {
+        if (this.selectedCards.length === 1) {
+            this.selectedCards.forEach((card) => {
+                card.showBack();
+            });
+            this.selectedCards = [];
+        }
+
         // Um pouco de magic numbering aqui :D
         const centerPosition = {
             x:
