@@ -168,6 +168,7 @@ export class Card {
      */
     showBack() {
         this.isFace = false;
+        this.isMatched = false;
         this.face.showBack();
         if (this.#element.classList.contains("face")) {
             this.#element.classList.remove("face");

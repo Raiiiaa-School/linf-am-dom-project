@@ -38,10 +38,42 @@ export class Gameboard {
      */
     selectedCards = [];
 
+    /**
+     * @type {number}
+     */
     moves = 0;
+    /**
+     * @type {number}
+     */
+    turnWithoutMatched = 0;
+    /**
+     * @type {number}
+     */
     maxCombo = 0;
+    /**
+     * @type {number}
+     */
     combo = 0;
-    gameTimer = new Timer();
+    /**
+     * @type {number}
+     */
+    gameTime = 0;
+    /**
+     * @type {number}
+     */
+    challangeScore = 1000;
+    /**
+     * @type {number}
+     */
+    score = 0;
+    /**
+     * @type {number}
+     */
+    roundScore = 0;
+    /**
+     * @type {number}
+     */
+    highScore = 0;
 
     /**
      * @type {HTMLDivElement}
@@ -55,12 +87,31 @@ export class Gameboard {
      * @type {HTMLDivElement}
      */
     overlayElement;
+    /**
+     * @type {HTMLButtonElement}
+     */
+    restartButton;
 
     constructor() {
-        this.sounds = new Sounds();
         this.#element = document.querySelector("#stage");
         this.progressElement = document.querySelector("#time");
         this.overlayElement = document.querySelector(".overlay");
+
+        // Stats Elements
+        this.scoreToBeatElement = document.querySelector(".score-to-beat");
+        this.restartButton = document.querySelector(".game-buttons .restart");
+        this.roundScoreElement = document.querySelector(".score-value");
+        this.currentTimeElement = document.querySelector(".time-value");
+
+        window.addEventListener("keydown", (event) => {
+            this.onSpaceBar(event);
+        });
+
+        this.restartButton.addEventListener("click", () => {
+            this.restart();
+        });
+
+        this.sounds = new Sounds();
         Card.gameboard = this;
 
         this.shuffleTimer.setOnComplete(async () => {
@@ -73,6 +124,8 @@ export class Gameboard {
 
         this.secondsTimer.setOnComplete(() => {
             this.progressElement.value++;
+            this.gameTime++;
+            this.updateTime();
 
             if (this.shuffleTimer.getRemaining() <= 5000) {
                 this.progressElement.classList.add("blink");
@@ -84,16 +137,129 @@ export class Gameboard {
     /**
      * Starts the game.
      */
-    async start() {
-        this.sounds.background.play();
+    async start(startSound = true) {
+        if (startSound) {
+            this.sounds.background.play();
+        }
 
+        await this.shuffleCards();
+
+        this.resetStats();
+
+        this.shuffleTimer.restart();
+        this.secondsTimer.restart();
+    }
+
+    restart() {
         this.cards.forEach((card) => {
             card.showBack();
         });
 
-        await this.shuffleCards();
-        this.shuffleTimer.restart();
-        this.secondsTimer.restart();
+        this.selectedCards = [];
+        this.matchedCards = [];
+
+        this.start(false);
+    }
+
+    resetStats() {
+        this.moves = 0;
+        this.turnWithoutMatched = 0;
+        this.maxCombo = 0;
+        this.combo = 0;
+        this.gameTime = 0;
+        this.score = 0;
+        this.roundScore = 0;
+        this.progressElement.value = 0;
+    }
+
+    chooseDifficulty(restart = true) {
+        this.dialog = new Dialog(document.body)
+            .addTitle("Choose the difficulty")
+            .addButton("Baby Steps", async (dialog) => {
+                this.challangeScore = 1000;
+                this.updateChallangeScore();
+                dialog.close();
+                if (restart) {
+                    return this.restart();
+                }
+                await this.start();
+            })
+            .addButton("Normal", async (dialog) => {
+                this.challangeScore = 2000;
+                this.updateChallangeScore();
+                dialog.close();
+                if (restart) {
+                    return this.restart();
+                }
+                await this.start();
+            })
+            .addButton("Hard", async (dialog) => {
+                this.challangeScore = 3000;
+                this.updateChallangeScore();
+                dialog.close();
+                if (restart) {
+                    return this.restart();
+                }
+                await this.start();
+            })
+            .addButton("Gamer", async (dialog) => {
+                this.challangeScore = 4000;
+                this.updateChallangeScore();
+                dialog.close();
+                if (restart) {
+                    return this.restart();
+                }
+                await this.start();
+            })
+            .addButton("Dark Souls", async (dialog) => {
+                this.challangeScore = 5000;
+                this.updateChallangeScore();
+                dialog.close();
+                if (restart) {
+                    return this.restart();
+                }
+                await this.start();
+            })
+            .open();
+    }
+
+    updateChallangeScore() {
+        this.scoreToBeatElement.textContent = this.challangeScore;
+    }
+
+    updateTime() {
+        this.currentTimeElement.textContent = this.gameTime;
+    }
+
+    updateScore(gameFinish = false) {
+        this.roundScore = 100;
+        if (this.turnWithoutMatched > 0) {
+            this.roundScore = Math.floor(
+                this.roundScore / this.turnWithoutMatched,
+            );
+        }
+        if (this.combo > 0) {
+            this.roundScore = this.combo * this.roundScore;
+        }
+
+        if (gameFinish) {
+            const MIN_TIME_MULT = 10;
+            const MAX_TIME_MULT = 100;
+            let timeScore = 100;
+            let timeScoreMultiplier = Math.min(
+                Math.max(MIN_TIME_MULT, Math.floor(100 / this.gameTime)),
+                MAX_TIME_MULT,
+            );
+
+            this.roundScore += timeScore * timeScoreMultiplier;
+        }
+
+        this.score += this.roundScore;
+        this.roundScoreElement.textContent = this.score;
+
+        if (gameFinish && this.score > this.highScore) {
+            this.highScore = this.score;
+        }
     }
 
     /**
@@ -146,6 +312,8 @@ export class Gameboard {
      * Handles the selected pair of cards.
      */
     handleSelectedPair() {
+        this.moves++;
+
         if (!this.selectedCards.at(0).compare(this.selectedCards.at(-1))) {
             this.handleUnmatchedPair();
             return;
@@ -158,6 +326,8 @@ export class Gameboard {
      * Handles the unmatched pair of cards.
      */
     handleUnmatchedPair() {
+        this.combo = 0;
+        this.turnWithoutMatched++;
         this.resetGameLoop(1000, false);
     }
 
@@ -171,11 +341,22 @@ export class Gameboard {
         this.selectedCards.forEach((card) => {
             card.handleMatch();
         });
+
+        this.combo++;
+        this.turnWithoutMatched = 0;
+
+        if (this.combo > this.maxCombo) {
+            this.maxCombo = this.combo;
+        }
+
         this.resetGameLoop(1000, true);
 
         if (this.matchedCards.length >= this.cards.length) {
+            this.updateScore(true);
             this.win();
+            return;
         }
+        this.updateScore();
     }
 
     /**
@@ -201,15 +382,34 @@ export class Gameboard {
         this.shuffleTimer.pause();
         this.secondsTimer.pause();
 
+        const winCondition = this.score >= this.challangeScore;
+
+        const title = winCondition ? "Congratulations!" : "You lost!";
+
+        const message = winCondition
+            ? "You beat the challange! You did it! Feel proud of yourself!"
+            : "You didn't beat the challange. Try again?";
+
         const dialog = new Dialog(document.body)
-            .addTitle("Congratulations!")
-            .addText(
-                "You won the game. Nobody cares for this game nowadays so I didn't even bother to make a score for you. Wanna try again?",
-            )
-            .addButton("Restart", (dialog) => {
-                this.start();
-                dialog.close();
-            });
+            .addTitle(title)
+            .addText(message);
+
+        if (winCondition) {
+            dialog.addText(`Total time played: ${this.gameTime} seconds`);
+            dialog.addText(`Total moves: ${this.moves}`);
+            dialog.addText(`Max Combo: ${this.maxCombo}`);
+            dialog.addText(`Your score: ${this.score}`);
+            dialog.addText(`High Score: ${this.highScore}`);
+        }
+
+        dialog.addButton("Make it harder!", () => {
+            this.chooseDifficulty();
+            dialog.close();
+        });
+        dialog.addButton("Restart", (dialog) => {
+            this.restart();
+            dialog.close();
+        });
 
         dialog.open();
     }
@@ -221,10 +421,12 @@ export class Gameboard {
     getShuffledCardPositions() {
         const positions = new Array(this.BOARD_SIZE * this.BOARD_SIZE);
 
-        this.matchedCards.forEach((card) => {
-            const index = this.cards.indexOf(card);
-            positions[index] = { x: card.x, y: card.y };
-        });
+        if (this.matchedCards.length > 0) {
+            this.matchedCards.forEach((card) => {
+                const index = this.cards.indexOf(card);
+                positions[index] = { x: card.x, y: card.y };
+            });
+        }
 
         this.cards.forEach((card, index) => {
             if (card.isMatched) {
@@ -317,6 +519,16 @@ export class Gameboard {
     async shuffleCards(animationDelay = 50) {
         const newPositions = this.getShuffledCardPositions();
         await this.animateShuffle(newPositions, animationDelay);
+    }
+
+    /**
+     * Handles spacebar keydown event.
+     * @param {KeyboardEvent} event - The keyboard event.
+     */
+    onSpaceBar(event) {
+        if (event.code === "Space") {
+            this.restart();
+        }
     }
 
     /**
