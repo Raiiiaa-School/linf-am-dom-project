@@ -173,6 +173,9 @@ export class Card {
         if (this.#element.classList.contains("face")) {
             this.#element.classList.remove("face");
         }
+        if (this.#element.classList.contains("matched")) {
+            this.#element.classList.remove("matched");
+        }
         this.#element.classList.add("back");
         this.flipTimer.start();
     }

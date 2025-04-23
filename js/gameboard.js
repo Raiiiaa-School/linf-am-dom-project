@@ -132,6 +132,8 @@ export class Gameboard {
                 this.overlayElement.classList.remove("hidden");
             }
         });
+
+        this.loadHighscore();
     }
 
     /**
@@ -170,6 +172,10 @@ export class Gameboard {
         this.score = 0;
         this.roundScore = 0;
         this.progressElement.value = 0;
+
+        this.updateTime();
+        this.updateScore(false, true);
+        this.updateChallangeScore();
     }
 
     chooseDifficulty(restart = true) {
@@ -231,7 +237,14 @@ export class Gameboard {
         this.currentTimeElement.textContent = this.gameTime;
     }
 
-    updateScore(gameFinish = false) {
+    updateScore(gameFinish = false, gameStart = false) {
+        if (gameStart) {
+            this.score = 0;
+            this.roundScore = 0;
+            this.roundScoreElement.textContent = this.score;
+            return;
+        }
+
         this.roundScore = 100;
         if (this.turnWithoutMatched > 0) {
             this.roundScore = Math.floor(
@@ -259,6 +272,7 @@ export class Gameboard {
 
         if (gameFinish && this.score > this.highScore) {
             this.highScore = this.score;
+            this.setHighscore(this.highScore);
         }
     }
 
@@ -529,6 +543,21 @@ export class Gameboard {
         if (event.code === "Space") {
             this.restart();
         }
+    }
+
+    setHighscore(score) {
+        localStorage.setItem("highScore", score);
+    }
+
+    loadHighscore() {
+        const value = localStorage.getItem("highScore");
+        if (!value) {
+            localStorage.setItem("highScore", 0);
+            value = 0;
+        }
+        const highScore = parseInt(value);
+        this.highScore = highScore;
+        return highScore;
     }
 
     /**
