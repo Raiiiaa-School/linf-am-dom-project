@@ -550,7 +550,7 @@ export class Gameboard {
     }
 
     loadHighscore() {
-        const value = localStorage.getItem("highScore");
+        let value = localStorage.getItem("highScore");
         if (!value) {
             localStorage.setItem("highScore", 0);
             value = 0;
